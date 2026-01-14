@@ -1,0 +1,7 @@
+{
+  "name": "WhatsApp Link Generator",
+  "description": "A beautiful interactive portal that combines dynamic weather effects with a professional WhatsApp link and QR code generator.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
