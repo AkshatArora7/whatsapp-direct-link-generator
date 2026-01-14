@@ -5,13 +5,19 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
+    // Vite uses this to replace process.env.API_KEY in your source code
     'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
   },
-  publicDir: './', // Ensures files in root like robots.txt are copied to dist
   build: {
     outDir: 'dist',
+    emptyOutDir: true,
     rollupOptions: {
-      input: './index.html'
+      input: {
+        main: './index.html'
+      }
     }
+  },
+  server: {
+    port: 3000
   }
 });
