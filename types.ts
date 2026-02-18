@@ -1,6 +1,7 @@
 
 export enum WeatherType {
   CLEAR = 'CLEAR',
+  LIGHT_SNOW = 'LIGHT_SNOW',
   SNOW = 'SNOW',
   RAIN = 'RAIN',
   STORM = 'STORM',
@@ -22,8 +23,14 @@ export const WEATHER_CONFIGS: Record<WeatherType, WeatherConfig> = {
     color: 'text-yellow-400',
     bgGradient: 'from-blue-400 to-blue-600'
   },
+  [WeatherType.LIGHT_SNOW]: {
+    label: 'Light Snow',
+    icon: '🌨️',
+    color: 'text-blue-50',
+    bgGradient: 'from-slate-700 to-slate-800'
+  },
   [WeatherType.SNOW]: {
-    label: 'Snowing',
+    label: 'Heavy Snow',
     icon: '❄️',
     color: 'text-blue-100',
     bgGradient: 'from-slate-800 to-slate-900'

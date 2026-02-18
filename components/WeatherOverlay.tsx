@@ -49,7 +49,13 @@ const WeatherOverlay: React.FC<WeatherOverlayProps> = ({ type, cardRef }) => {
     let splashes: { x: number; y: number; vx: number; vy: number; life: number; opacity: number }[] = [];
     let startTime = performance.now();
     
-    const particleCount = type === WeatherType.STORM ? 140 : (type === WeatherType.CLEAR ? 25 : 90);
+    // Determine particle count based on weather type
+    let particleCount = 90;
+    if (type === WeatherType.STORM) particleCount = 140;
+    else if (type === WeatherType.CLEAR) particleCount = 25;
+    else if (type === WeatherType.SNOW) particleCount = 850; // BLIZZARD INTENSITY
+    else if (type === WeatherType.LIGHT_SNOW) particleCount = 150; // Gentle Snow
+    else if (type === WeatherType.RAIN) particleCount = 200;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -77,10 +83,16 @@ const WeatherOverlay: React.FC<WeatherOverlayProps> = ({ type, cardRef }) => {
         this.opacity = Math.random() * 0.3 + 0.1;
 
         switch (type) {
-          case WeatherType.SNOW:
-            this.size = Math.random() * 3 + 1;
-            this.speedY = Math.random() * 0.7 + 0.3;
-            this.speedX = Math.random() * 1.2 - 0.6;
+          case WeatherType.SNOW: // Heavy Snow (Blizzard)
+            this.size = Math.random() * 4 + 2; // Large flakes
+            this.speedY = Math.random() * 6 + 4; // Fast falling
+            this.speedX = Math.random() * 5 + 2; // Strong wind pushing right
+            this.opacity = Math.random() * 0.6 + 0.2; // Higher visibility
+            break;
+          case WeatherType.LIGHT_SNOW: // Gentle Snow
+            this.size = Math.random() * 2.5 + 1;
+            this.speedY = Math.random() * 1.5 + 0.5; // Slow drift
+            this.speedX = Math.random() * 1 - 0.5; // Meandering
             break;
           case WeatherType.RAIN:
             this.size = Math.random() * 1 + 0.5;
@@ -114,17 +126,24 @@ const WeatherOverlay: React.FC<WeatherOverlayProps> = ({ type, cardRef }) => {
         this.y += this.speedY;
         this.x += this.speedX;
 
-        if (cardRect && (type === WeatherType.SNOW || type === WeatherType.RAIN || type === WeatherType.STORM)) {
+        const isSnowing = type === WeatherType.SNOW || type === WeatherType.LIGHT_SNOW;
+
+        if (cardRect && (isSnowing || type === WeatherType.RAIN || type === WeatherType.STORM)) {
+          // Adjust collision width for rounded corners (approx 2.5rem ~ 40px)
+          // We restrict landing to the flat top surface
+          const cornerInset = 42; 
+
           if (
-            this.x > cardRect.left &&
-            this.x < cardRect.right &&
+            this.x > cardRect.left + cornerInset &&
+            this.x < cardRect.right - cornerInset &&
             this.y > cardRect.top &&
-            this.y < cardRect.top + this.speedY
+            this.y < cardRect.top + this.speedY // Collision depth
           ) {
-            if (type === WeatherType.SNOW) {
+            if (isSnowing) {
+                // Accumulate snow on card
                 landedParticles.push({
                     x: this.x,
-                    y: cardRect.top + Math.random() * 2,
+                    y: cardRect.top + Math.random() * 3,
                     size: this.size,
                     opacity: this.opacity,
                     life: 150 + Math.random() * 250
@@ -153,6 +172,7 @@ const WeatherOverlay: React.FC<WeatherOverlayProps> = ({ type, cardRef }) => {
         }
         
         if (this.x > canvas!.width + 50 || this.x < -50) {
+          // Wrap around for wind effects
           this.x = this.speedX > 0 ? -40 : canvas!.width + 40;
         }
       }
@@ -160,7 +180,7 @@ const WeatherOverlay: React.FC<WeatherOverlayProps> = ({ type, cardRef }) => {
       draw() {
         if (!ctx) return;
         ctx.beginPath();
-        if (type === WeatherType.SNOW) {
+        if (type === WeatherType.SNOW || type === WeatherType.LIGHT_SNOW) {
           ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
           ctx.fill();
@@ -187,8 +207,6 @@ const WeatherOverlay: React.FC<WeatherOverlayProps> = ({ type, cardRef }) => {
       const sourceX = canvas.width * 0.95;
       const sourceY = -canvas.height * 0.1;
       
-      // 1. Core Atmosphere Bloom
-      // Using time to create a very slow "breathing" effect
       const breathe = Math.sin(time * 0.0005) * 0.05;
       const glare = ctx.createRadialGradient(sourceX, sourceY, 0, sourceX, sourceY, canvas.width * 0.9);
       glare.addColorStop(0, `rgba(255, 255, 230, ${0.4 + breathe})`);
@@ -198,8 +216,6 @@ const WeatherOverlay: React.FC<WeatherOverlayProps> = ({ type, cardRef }) => {
       ctx.fillStyle = glare;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 2. Diamond Shimmer Rays
-      // Rays are stable but sway slightly and change intensity slowly
       ctx.save();
       ctx.translate(sourceX, sourceY);
       
@@ -230,7 +246,6 @@ const WeatherOverlay: React.FC<WeatherOverlayProps> = ({ type, cardRef }) => {
       
       ctx.restore();
 
-      // 3. Subtle chromatic aberration flare (static but glowing)
       const flareX = canvas.width * 0.3;
       const flareY = canvas.height * 0.7;
       const flareGrad = ctx.createRadialGradient(flareX, flareY, 0, flareX, flareY, 200);
@@ -269,6 +284,10 @@ const WeatherOverlay: React.FC<WeatherOverlayProps> = ({ type, cardRef }) => {
 
       for (let i = landedParticles.length - 1; i >= 0; i--) {
           const lp = landedParticles[i];
+          
+          // Gravity: Snow slides down slowly
+          lp.y += 0.25;
+
           ctx.beginPath();
           ctx.arc(lp.x, lp.y, lp.size, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 255, 255, ${lp.opacity * (lp.life / 50)})`;

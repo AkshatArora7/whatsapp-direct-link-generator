@@ -3,11 +3,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { WeatherType, WEATHER_CONFIGS } from './types';
 import WeatherOverlay from './components/WeatherOverlay';
 import WhatsAppTools from './components/WhatsAppTools';
-import { CloudLightning, Sun, CloudRain, Snowflake, Wind, Cloud, MapPin } from 'lucide-react';
+import { CloudLightning, Sun, CloudRain, Snowflake, Wind, Cloud, MapPin, Loader2 } from 'lucide-react';
 import { getWeatherFromLocation } from './services/geminiService';
 
 const App: React.FC = () => {
-  const [weather, setWeather] = useState<WeatherType>(WeatherType.CLEAR);
+  const [weather, setWeather] = useState<WeatherType>(WeatherType.SNOW);
   const [isDetecting, setIsDetecting] = useState(true);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -53,25 +53,35 @@ const App: React.FC = () => {
       <WeatherOverlay type={weather} cardRef={cardRef} />
 
       {/* Minimal Top Weather Controls */}
-      <nav className="z-50 mb-12 flex items-center gap-1 bg-black/30 backdrop-blur-3xl p-1.5 rounded-full border border-white/5 shadow-2xl relative">
+      <nav className="z-50 mb-12 flex items-center gap-1 bg-black/30 backdrop-blur-3xl p-1.5 rounded-full border border-white/5 shadow-2xl relative flex-wrap justify-center">
         {isDetecting && (
           <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap">
             <span className="flex items-center gap-1 text-[8px] text-white/40 uppercase tracking-widest font-bold animate-pulse">
-              <MapPin className="w-2 h-2" /> Syncing Local Atmosphere...
+              <Loader2 className="w-2 h-2 animate-spin" /> Syncing Local Atmosphere...
             </span>
           </div>
         )}
         <button 
           onClick={() => setWeather(WeatherType.CLEAR)}
           className={`p-3 rounded-full transition-all duration-300 ${weather === WeatherType.CLEAR ? 'bg-white text-blue-600 scale-110 shadow-lg' : 'text-white/30 hover:text-white hover:bg-white/5'}`}
-          aria-label="Clear"
+          aria-label="Sunny"
+          title="Sunny"
         >
           <Sun className="w-5 h-5" />
         </button>
         <button 
+          onClick={() => setWeather(WeatherType.LIGHT_SNOW)}
+          className={`p-3 rounded-full transition-all duration-300 ${weather === WeatherType.LIGHT_SNOW ? 'bg-white text-blue-300 scale-110 shadow-lg' : 'text-white/30 hover:text-white hover:bg-white/5'}`}
+          aria-label="Light Snow"
+          title="Light Snow"
+        >
+          <Snowflake className="w-4 h-4" />
+        </button>
+        <button 
           onClick={() => setWeather(WeatherType.SNOW)}
           className={`p-3 rounded-full transition-all duration-300 ${weather === WeatherType.SNOW ? 'bg-white text-blue-400 scale-110 shadow-lg' : 'text-white/30 hover:text-white hover:bg-white/5'}`}
-          aria-label="Snow"
+          aria-label="Heavy Snow"
+          title="Heavy Snow"
         >
           <Snowflake className="w-5 h-5" />
         </button>
@@ -79,6 +89,7 @@ const App: React.FC = () => {
           onClick={() => setWeather(WeatherType.RAIN)}
           className={`p-3 rounded-full transition-all duration-300 ${weather === WeatherType.RAIN ? 'bg-white text-blue-500 scale-110 shadow-lg' : 'text-white/30 hover:text-white hover:bg-white/5'}`}
           aria-label="Rain"
+          title="Rain"
         >
           <CloudRain className="w-5 h-5" />
         </button>
@@ -86,6 +97,7 @@ const App: React.FC = () => {
           onClick={() => setWeather(WeatherType.STORM)}
           className={`p-3 rounded-full transition-all duration-300 ${weather === WeatherType.STORM ? 'bg-white text-purple-600 scale-110 shadow-lg' : 'text-white/30 hover:text-white hover:bg-white/5'}`}
           aria-label="Storm"
+          title="Storm"
         >
           <CloudLightning className="w-5 h-5" />
         </button>
@@ -93,6 +105,7 @@ const App: React.FC = () => {
           onClick={() => setWeather(WeatherType.WIND)}
           className={`p-3 rounded-full transition-all duration-300 ${weather === WeatherType.WIND ? 'bg-white text-teal-600 scale-110 shadow-lg' : 'text-white/30 hover:text-white hover:bg-white/5'}`}
           aria-label="Wind"
+          title="Wind"
         >
           <Wind className="w-5 h-5" />
         </button>
@@ -100,6 +113,7 @@ const App: React.FC = () => {
           onClick={() => setWeather(WeatherType.CLOUDY)}
           className={`p-3 rounded-full transition-all duration-300 ${weather === WeatherType.CLOUDY ? 'bg-white text-gray-600 scale-110 shadow-lg' : 'text-white/30 hover:text-white hover:bg-white/5'}`}
           aria-label="Cloudy"
+          title="Cloudy"
         >
           <Cloud className="w-5 h-5" />
         </button>

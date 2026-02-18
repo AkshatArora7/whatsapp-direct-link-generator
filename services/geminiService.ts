@@ -12,7 +12,7 @@ export const getWeatherFromLocation = async (lat?: number, lon?: number): Promis
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `${query} Please categorize it into exactly one of these types: CLEAR, SNOW, RAIN, STORM, WIND, CLOUDY. Return ONLY the uppercase category name.`,
+      contents: `${query} Please categorize it into exactly one of these types: CLEAR, LIGHT_SNOW, SNOW, RAIN, STORM, WIND, CLOUDY. Return ONLY the uppercase category name. Use SNOW for heavy snow or blizzard conditions.`,
       config: {
         tools: [{ googleSearch: {} }],
       },
@@ -25,8 +25,9 @@ export const getWeatherFromLocation = async (lat?: number, lon?: number): Promis
     }
     
     // Fallback parsing if model returns more than just the word
-    if (text.includes('RAIN')) return WeatherType.RAIN;
+    if (text.includes('LIGHT SNOW')) return WeatherType.LIGHT_SNOW;
     if (text.includes('SNOW')) return WeatherType.SNOW;
+    if (text.includes('RAIN')) return WeatherType.RAIN;
     if (text.includes('STORM') || text.includes('THUNDER')) return WeatherType.STORM;
     if (text.includes('WIND')) return WeatherType.WIND;
     if (text.includes('CLOUD')) return WeatherType.CLOUDY;
